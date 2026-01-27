@@ -219,15 +219,12 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
             </p>
           </div>
         ) : (
-          <div
-            ref={parentRef}
-            className="h-full overflow-auto"
-          >
+          <div ref={parentRef} className="h-full overflow-auto">
             <div
               style={{
                 height: `${rowVirtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
+                width: "100%",
+                position: "relative",
               }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -236,21 +233,21 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
                   <div
                     key={virtualRow.key}
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       top: 0,
                       left: 0,
-                      width: '100%',
+                      width: "100%",
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
                     <div
-                      className={`group relative p-3 rounded-xl transition-all duration-200 cursor-pointer overflow-hidden min-w-0 w-full ${
+                      className={`group relative p-3 transition-all duration-200 cursor-pointer overflow-hidden min-w-0 w-full ${
                         file.id === selectedFileId
                           ? ""
                           : file.completed
-                            ? "bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:shadow-md hover:shadow-primary/10"
-                            : "bg-muted/50 hover:bg-muted border border-transparent hover:border-border/50 hover:shadow-sm"
+                            ? "bg-linear-to-r from-primary/10 to-primary/5"
+                            : "bg-muted/50 hover:bg-muted hover:border-border/50"
                       }`}
                       onClick={() => selectFile(file.id)}
                     >
