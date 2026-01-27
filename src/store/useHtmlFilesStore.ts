@@ -1,4 +1,9 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import { useEffect, useState } from "react";
+
+const DB_NAME = "html-files-db";
+const DB_VERSION = 1;
+const STORE_NAME = "files";
 
 export interface HtmlFile {
   id: string;
@@ -6,12 +11,14 @@ export interface HtmlFile {
   content: string;
   size: number;
   uploadedAt: Date;
+  completed: boolean;
 }
 
 interface HtmlFilesState {
   files: HtmlFile[];
   selectedFileId: string | null;
   isSidebarOpen: boolean;
+  hideAside: boolean;
   addFile: (file: HtmlFile) => void;
   addFiles: (files: HtmlFile[]) => void;
   removeFile: (id: string) => void;
@@ -20,47 +27,230 @@ interface HtmlFilesState {
   setSidebarOpen: (isOpen: boolean) => void;
   sortFilesByName: (ascending?: boolean) => void;
   clearAllFiles: () => void;
+  toggleFileCompleted: (id: string) => void;
+  getCompletedCount: () => number;
+  toggleHideAside: () => void;
+  setHideAside: (hide: boolean) => void;
 }
 
-export const useHtmlFilesStore = create<HtmlFilesState>((set) => ({
-  files: [],
-  selectedFileId: null,
-  isSidebarOpen: true,
+interface StoredData {
+  files: HtmlFile[];
+  selectedFileId: string | null;
+  hideAside?: boolean;
+}
 
-  addFile: (file) =>
-    set((state) => ({
-      files: [...state.files, file],
-    })),
+// IndexedDB helpers
+const openDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-  // Add multiple files in a single state update
-  addFiles: (files) =>
-    set((state) => ({
-      files: [...state.files, ...files],
-    })),
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
 
-  removeFile: (id) =>
-    set((state) => ({
-      files: state.files.filter((f) => f.id !== id),
-      selectedFileId: state.selectedFileId === id ? null : state.selectedFileId,
-    })),
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+  });
+};
 
-  selectFile: (id) => set({ selectedFileId: id }),
+const saveToIndexedDB = async (data: StoredData): Promise<void> => {
+  if (typeof window === "undefined") return;
 
-  toggleSidebar: () =>
-    set((state) => ({
-      isSidebarOpen: !state.isSidebarOpen,
-    })),
+  try {
+    const db = await openDB();
+    const transaction = db.transaction([STORE_NAME], "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+    store.put(data, "state");
+    await new Promise<void>((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+  } catch (error) {
+    console.error("Failed to save to IndexedDB:", error);
+  }
+};
 
-  setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
+const loadFromIndexedDB = async (): Promise<StoredData> => {
+  if (typeof window === "undefined") {
+    return { files: [], selectedFileId: null, hideAside: false };
+  }
 
-  sortFilesByName: (ascending = true) =>
-    set((state) => ({
-      files: [...state.files].sort((a, b) =>
-        ascending
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name)
-      ),
-    })),
+  try {
+    const db = await openDB();
+    const transaction = db.transaction([STORE_NAME], "readonly");
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.get("state") as IDBRequest<StoredData>;
 
-  clearAllFiles: () => set({ files: [], selectedFileId: null }),
-}));
+    const data = await new Promise<StoredData>((resolve, reject) => {
+      request.onsuccess = () =>
+        resolve(request.result || { files: [], selectedFileId: null });
+      request.onerror = () => reject(request.error);
+    });
+
+    db.close();
+
+    // Convert date strings back to Date objects
+    return {
+      files: (data.files || []).map((file) => ({
+        ...file,
+        uploadedAt: new Date(file.uploadedAt),
+      })),
+      selectedFileId: data.selectedFileId || null,
+      hideAside: data.hideAside || false,
+    };
+  } catch (error) {
+    console.error("Failed to load from IndexedDB:", error);
+    return { files: [], selectedFileId: null, hideAside: false };
+  }
+};
+
+export const useHtmlFilesStore = create<HtmlFilesState>((set, get) => {
+  return {
+    files: [],
+    selectedFileId: null,
+    isSidebarOpen: true,
+    hideAside: true,
+
+    addFile: (file) =>
+      set((state) => {
+        const newFiles = [...state.files, file];
+        saveToIndexedDB({
+          files: newFiles,
+          selectedFileId: state.selectedFileId,
+          hideAside: state.hideAside,
+        });
+        return { files: newFiles };
+      }),
+
+    addFiles: (files) =>
+      set((state) => {
+        const newFiles = [...state.files, ...files];
+        saveToIndexedDB({
+          files: newFiles,
+          selectedFileId: state.selectedFileId,
+          hideAside: state.hideAside,
+        });
+        return { files: newFiles };
+      }),
+
+    removeFile: (id) =>
+      set((state) => {
+        const newFiles = state.files.filter((f) => f.id !== id);
+        const newSelectedId =
+          state.selectedFileId === id ? null : state.selectedFileId;
+        saveToIndexedDB({
+          files: newFiles,
+          selectedFileId: newSelectedId,
+          hideAside: state.hideAside,
+        });
+        return {
+          files: newFiles,
+          selectedFileId: newSelectedId,
+        };
+      }),
+
+    selectFile: (id) =>
+      set((state) => {
+        saveToIndexedDB({
+          files: state.files,
+          selectedFileId: id,
+          hideAside: state.hideAside,
+        });
+        return { selectedFileId: id };
+      }),
+
+    toggleSidebar: () =>
+      set((state) => ({
+        isSidebarOpen: !state.isSidebarOpen,
+      })),
+
+    setSidebarOpen: (isOpen) => set({ isSidebarOpen: isOpen }),
+
+    sortFilesByName: (ascending = true) =>
+      set((state) => {
+        const newFiles = [...state.files].sort((a, b) =>
+          ascending
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name),
+        );
+        saveToIndexedDB({
+          files: newFiles,
+          selectedFileId: state.selectedFileId,
+          hideAside: state.hideAside,
+        });
+        return { files: newFiles };
+      }),
+
+    clearAllFiles: () =>
+      set(() => {
+        saveToIndexedDB({
+          files: [],
+          selectedFileId: null,
+          hideAside: get().hideAside,
+        });
+        return { files: [], selectedFileId: null };
+      }),
+
+    toggleFileCompleted: (id) =>
+      set((state) => {
+        const newFiles = state.files.map((file) =>
+          file.id === id ? { ...file, completed: !file.completed } : file,
+        );
+        saveToIndexedDB({
+          files: newFiles,
+          selectedFileId: state.selectedFileId,
+          hideAside: state.hideAside,
+        });
+        return { files: newFiles };
+      }),
+
+    getCompletedCount: () => {
+      return get().files.filter((file) => file.completed).length;
+    },
+
+    toggleHideAside: () =>
+      set((state) => {
+        const newHideAside = !state.hideAside;
+        saveToIndexedDB({
+          files: state.files,
+          selectedFileId: state.selectedFileId,
+          hideAside: newHideAside,
+        });
+        return { hideAside: newHideAside };
+      }),
+
+    setHideAside: (hide) =>
+      set((state) => {
+        saveToIndexedDB({
+          files: state.files,
+          selectedFileId: state.selectedFileId,
+          hideAside: hide,
+        });
+        return { hideAside: hide };
+      }),
+  };
+});
+
+// Hook to load IndexedDB data after client mount
+export const useHydrateStore = (): boolean => {
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!hasHydrated && typeof window !== "undefined") {
+      loadFromIndexedDB().then((stored) => {
+        useHtmlFilesStore.setState({
+          files: stored.files,
+          selectedFileId: stored.selectedFileId,
+          hideAside: stored.hideAside ?? false,
+        });
+        setHasHydrated(true);
+      });
+    }
+  }, [hasHydrated]);
+
+  return hasHydrated;
+};

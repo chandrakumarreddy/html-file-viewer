@@ -1,19 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { FileCode, X, Maximize2, Minimize2, Download, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useHtmlFilesStore } from '@/store/useHtmlFilesStore';
+import { useEffect, useRef, useState } from "react";
+import {
+  FileCode,
+  X,
+  Maximize2,
+  Minimize2,
+  Download,
+  ExternalLink,
+  Sidebar,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useHtmlFilesStore } from "@/store/useHtmlFilesStore";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 export function FilePreview() {
-  const { files, selectedFileId, selectFile } = useHtmlFilesStore();
+  const { files, selectedFileId, selectFile, hideAside, toggleHideAside } =
+    useHtmlFilesStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -23,9 +32,9 @@ export function FilePreview() {
 
   const handleDownload = () => {
     if (!selectedFile) return;
-    const blob = new Blob([selectedFile.content], { type: 'text/html' });
+    const blob = new Blob([selectedFile.content], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = selectedFile.name;
     document.body.appendChild(a);
@@ -36,9 +45,9 @@ export function FilePreview() {
 
   const handleOpenInNewTab = () => {
     if (!selectedFile) return;
-    const blob = new Blob([selectedFile.content], { type: 'text/html' });
+    const blob = new Blob([selectedFile.content], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
   const handleClose = () => {
@@ -48,11 +57,6 @@ export function FilePreview() {
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
     setDialogOpen(!isFullscreen);
-  };
-
-  // Inject CSS to prevent styles from bleeding out
-  const getSafeHtmlContent = (html: string) => {
-    return html;
   };
 
   useEffect(() => {
@@ -66,15 +70,16 @@ export function FilePreview() {
         doc.close();
 
         // Add base styles to make preview nicer
-        const style = doc.createElement('style');
+        const style = doc.createElement("style");
         style.textContent = `
           * { box-sizing: border-box; }
           body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; }
+          ${hideAside ? `aside,footer,header, .style_chatButtonContainer__NAl07 { display: none !important; } .ant-layout-content {margin: 0 !important;} .ant-layout {margin: 0 !important;} .style_learnContent__K5K7M {margin: 0 !important; padding: 0 !important;}` : ""}
         `;
         doc.head?.appendChild(style);
       }
     }
-  }, [selectedFile]);
+  }, [selectedFile, hideAside]);
 
   if (!selectedFile) {
     return (
@@ -97,13 +102,23 @@ export function FilePreview() {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <FileCode className="w-5 h-5 text-primary flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <h3 className="text-tiny font-semibold truncate">{selectedFile.name}</h3>
+            <h3 className="text-tiny font-semibold truncate">
+              {selectedFile.name}
+            </h3>
             <p className="text-tiny text-muted-foreground">
               {(selectedFile.size / 1024).toFixed(2)} KB
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant={hideAside ? "default" : "ghost"}
+            size="icon"
+            onClick={toggleHideAside}
+            title={hideAside ? "Show aside elements" : "Hide aside elements"}
+          >
+            <Sidebar className="w-4 h-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -126,7 +141,11 @@ export function FilePreview() {
             onClick={toggleFullscreen}
             title="Fullscreen preview"
           >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isFullscreen ? (
+              <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Maximize2 className="w-4 h-4" />
+            )}
           </Button>
           <Button
             variant="ghost"
