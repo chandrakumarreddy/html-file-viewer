@@ -247,7 +247,7 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
                           ? ""
                           : file.completed
                             ? "bg-linear-to-r from-primary/10 to-primary/5"
-                            : "bg-muted/50 hover:bg-muted hover:border-border/50"
+                            : "bg-muted/50 hover:bg-muted"
                       }`}
                       onClick={() => selectFile(file.id)}
                     >
