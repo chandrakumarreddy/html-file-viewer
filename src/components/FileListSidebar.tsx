@@ -80,7 +80,7 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
   const rowVirtualizer = useVirtualizer({
     count: files.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 60, // Estimated height of each file item
+    estimateSize: () => 52, // Estimated height of each file item
     overscan: 5, // Render a few extra items outside the visible area
   });
 
@@ -188,7 +188,7 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
       <div className="flex-1 overflow-hidden min-w-0">
         {files.length === 0 ? (
           <div className="p-10 text-center h-full overflow-auto">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-primary/10 to-primary/5 flex items-center justify-center">
               <svg
                 className="w-8 h-8 text-primary/60"
                 viewBox="0 0 24 24"
@@ -278,20 +278,12 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
                               file.id === selectedFileId
                                 ? "text-primary font-semibold"
                                 : file.completed
-                                  ? "text-primary"
+                                  ? "text-primary line-through"
                                   : "text-foreground"
                             }`}
                           >
                             {file.name}
                           </p>
-                          {file.completed && (
-                            <div className="flex items-center gap-1 mt-1 min-w-0">
-                              <Check className="w-3 h-3 shrink-0" />
-                              <span className="text-xs text-primary font-medium truncate">
-                                Completed
-                              </span>
-                            </div>
-                          )}
                         </div>
                         <Button
                           variant="ghost"
