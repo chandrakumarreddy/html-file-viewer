@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 
 function InitialLoader() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-background via-background to-muted/30 text-foreground">
+    <div className="flex flex-col items-center justify-center h-screen bg-linear-to-br from-background via-background to-muted/30 text-foreground">
       <div className="relative">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
         <div className="absolute inset-0 w-12 h-12 rounded-full bg-primary/20 blur-xl animate-pulse" />
@@ -31,16 +31,16 @@ export default function Home() {
       <aside
         className={
           isSidebarOpen
-            ? "min-w-80 max-w-[25%] shrink-0 border-r bg-gradient-to-b from-card to-card/95"
+            ? "min-w-80 max-w-[25%] shrink-0 border-r bg-linear-to-b from-card to-card/95"
             : "w-0"
         }
       >
         <FileListSidebar className="h-full" />
       </aside>
 
-      <main className="flex-1 bg-gradient-to-br from-background via-background to-muted/30">
+      <main className="flex-1 bg-linear-to-br from-background via-background to-muted/30">
         <div className="w-full h-full relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/[0.02] to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-primary/[0.02] to-transparent pointer-events-none" />
           <div className="relative h-full">
             {selectedFileId ? (
               <FilePreview />
@@ -48,7 +48,7 @@ export default function Home() {
               <div className="flex items-center justify-center h-full p-8">
                 <div className="w-full max-w-4xl text-center space-y-8">
                   <div className="space-y-4">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 mb-6 shadow-xl shadow-primary/10 ring-1 ring-primary/20">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-linear-to-br from-primary/20 to-primary/5 mb-6 shadow-xl shadow-primary/10 ring-1 ring-primary/20">
                       <svg
                         className="w-10 h-10 text-primary"
                         viewBox="0 0 24 24"
@@ -78,7 +78,7 @@ export default function Home() {
                         />
                       </svg>
                     </div>
-                    <h2 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+                    <h2 className="text-4xl font-bold bg-linear-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
                       {files.length === 0 ? "Welcome" : "Upload More Files"}
                     </h2>
                     <p className="text-muted-foreground text-base leading-relaxed max-w-md mx-auto">

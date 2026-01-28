@@ -19,6 +19,7 @@ interface HtmlFilesState {
   selectedFileId: string | null;
   isSidebarOpen: boolean;
   hideAside: boolean;
+  completedCount: number;
   addFile: (file: HtmlFile) => void;
   addFiles: (files: HtmlFile[]) => void;
   removeFile: (id: string) => void;
@@ -28,7 +29,6 @@ interface HtmlFilesState {
   sortFilesByName: (ascending?: boolean) => void;
   clearAllFiles: () => void;
   toggleFileCompleted: (id: string) => void;
-  getCompletedCount: () => number;
   toggleHideAside: () => void;
   setHideAside: (hide: boolean) => void;
 }
@@ -114,6 +114,7 @@ export const useHtmlFilesStore = create<HtmlFilesState>((set, get) => {
     selectedFileId: null,
     isSidebarOpen: true,
     hideAside: true,
+    completedCount: 0,
 
     addFile: (file) =>
       set((state) => {
@@ -123,22 +124,31 @@ export const useHtmlFilesStore = create<HtmlFilesState>((set, get) => {
           selectedFileId: state.selectedFileId,
           hideAside: state.hideAside,
         });
-        return { files: newFiles };
+        return {
+          files: newFiles,
+          completedCount: state.completedCount + (file.completed ? 1 : 0),
+        };
       }),
 
     addFiles: (files) =>
       set((state) => {
         const newFiles = [...state.files, ...files];
+        const newCompletedCount =
+          state.completedCount + files.filter((f) => f.completed).length;
         saveToIndexedDB({
           files: newFiles,
           selectedFileId: state.selectedFileId,
           hideAside: state.hideAside,
         });
-        return { files: newFiles };
+        return {
+          files: newFiles,
+          completedCount: newCompletedCount,
+        };
       }),
 
     removeFile: (id) =>
       set((state) => {
+        const removedFile = state.files.find((f) => f.id === id);
         const newFiles = state.files.filter((f) => f.id !== id);
         const newSelectedId =
           state.selectedFileId === id ? null : state.selectedFileId;
@@ -150,6 +160,9 @@ export const useHtmlFilesStore = create<HtmlFilesState>((set, get) => {
         return {
           files: newFiles,
           selectedFileId: newSelectedId,
+          completedCount: removedFile?.completed
+            ? state.completedCount - 1
+            : state.completedCount,
         };
       }),
 
@@ -183,7 +196,7 @@ export const useHtmlFilesStore = create<HtmlFilesState>((set, get) => {
           hideAside: state.hideAside,
         });
         return { files: newFiles };
-      }),
+      }), // completedCount unchanged
 
     clearAllFiles: () =>
       set(() => {
@@ -192,20 +205,32 @@ export const useHtmlFilesStore = create<HtmlFilesState>((set, get) => {
           selectedFileId: null,
           hideAside: get().hideAside,
         });
-        return { files: [], selectedFileId: null };
+        return { files: [], selectedFileId: null, completedCount: 0 };
       }),
 
     toggleFileCompleted: (id) =>
       set((state) => {
-        const newFiles = state.files.map((file) =>
-          file.id === id ? { ...file, completed: !file.completed } : file,
+        const file = state.files.find((f) => f.id === id);
+        if (!file) return state;
+
+        const newCompleted = !file.completed;
+        const newFiles = state.files.map((f) =>
+          f.id === id ? { ...f, completed: newCompleted } : f,
         );
+
+        // Non-blocking IndexedDB save
         saveToIndexedDB({
           files: newFiles,
           selectedFileId: state.selectedFileId,
           hideAside: state.hideAside,
-        });
-        return { files: newFiles };
+        }).catch(() => {});
+
+        return {
+          files: newFiles,
+          completedCount: newCompleted
+            ? state.completedCount + 1
+            : state.completedCount - 1,
+        };
       }),
 
     getCompletedCount: () => {
@@ -246,6 +271,7 @@ export const useHydrateStore = (): boolean => {
           files: stored.files,
           selectedFileId: stored.selectedFileId,
           hideAside: stored.hideAside ?? false,
+          completedCount: stored.files.filter((f) => f.completed).length,
         });
         setHasHydrated(true);
       });

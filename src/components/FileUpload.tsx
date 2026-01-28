@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useCallback, useState, useRef } from 'react';
-import { Upload, FilePlus, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useHtmlFilesStore } from '@/store/useHtmlFilesStore';
-import { toast } from '@/hooks/use-toast';
+import { useCallback, useState, useRef } from "react";
+import { Upload, FilePlus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useHtmlFilesStore } from "@/store/useHtmlFilesStore";
+import { toast } from "@/hooks/use-toast";
 
 export function FileUpload() {
   const { addFiles } = useHtmlFilesStore();
@@ -33,12 +33,14 @@ export function FileUpload() {
         const file = fileArray[i];
 
         // Validate file type
-        const isHtml = file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm');
+        const isHtml =
+          file.name.toLowerCase().endsWith(".html") ||
+          file.name.toLowerCase().endsWith(".htm");
 
         if (!isHtml) {
           errors.push({
             fileName: file.name,
-            reason: 'Invalid file type. Only .html and .htm files are allowed.',
+            reason: "Invalid file type. Only .html and .htm files are allowed.",
           });
           continue;
         }
@@ -57,7 +59,7 @@ export function FileUpload() {
         } catch (error) {
           errors.push({
             fileName: file.name,
-            reason: 'Failed to read file content.',
+            reason: "Failed to read file content.",
           });
         }
       }
@@ -65,9 +67,9 @@ export function FileUpload() {
       // Show error toasts for invalid/failed files
       errors.forEach(({ fileName, reason }) => {
         toast({
-          title: 'Upload Error',
+          title: "Upload Error",
           description: `${fileName}: ${reason}`,
-          variant: 'destructive',
+          variant: "destructive",
         });
       });
 
@@ -75,20 +77,20 @@ export function FileUpload() {
       if (filesToAdd.length > 0) {
         addFiles(filesToAdd);
         toast({
-          title: 'Files Uploaded',
-          description: `${filesToAdd.length} file${filesToAdd.length > 1 ? 's' : ''} uploaded successfully.`,
+          title: "Files Uploaded",
+          description: `${filesToAdd.length} file${filesToAdd.length > 1 ? "s" : ""} uploaded successfully.`,
         });
       } else {
         if (errors.length === 0 && totalFiles > 0) {
           toast({
-            title: 'Upload Info',
-            description: 'No valid HTML files found.',
-            variant: 'default',
+            title: "Upload Info",
+            description: "No valid HTML files found.",
+            variant: "default",
           });
         }
       }
     },
-    [addFiles]
+    [addFiles],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -113,7 +115,7 @@ export function FileUpload() {
         processFiles(files);
       }
     },
-    [processFiles]
+    [processFiles],
   );
 
   const handleFileSelect = useCallback(
@@ -128,10 +130,10 @@ export function FileUpload() {
 
       // Reset input to allow selecting the same files again
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     },
-    [processFiles]
+    [processFiles],
   );
 
   const handleButtonClick = useCallback(() => {
@@ -142,8 +144,8 @@ export function FileUpload() {
     <Card
       className={`p-12 border-2 border-dashed transition-all duration-300 rounded-3xl ${
         isDragging
-          ? 'border-primary bg-gradient-to-br from-primary/15 to-primary/5 scale-[1.01] shadow-2xl shadow-primary/20'
-          : 'border-border/60 bg-gradient-to-br from-card to-card/50 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10'
+          ? "border-primary bg-linear-to-br from-primary/15 to-primary/5 scale-[1.01] shadow-2xl shadow-primary/20"
+          : "border-border/60 bg-linear-to-br from-card to-card/50 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -151,16 +153,18 @@ export function FileUpload() {
     >
       <div className="flex flex-col items-center justify-center gap-8">
         <div className="relative">
-          <div className={`w-28 h-28 rounded-full bg-gradient-to-br from-primary/30 via-primary/20 to-primary/5 flex items-center justify-center transition-all duration-300 ${isDragging ? 'scale-110' : ''} shadow-xl shadow-primary/20 ring-1 ring-primary/20`}>
+          <div
+            className={`w-28 h-28 rounded-full bg-linear-to-br from-primary/30 via-primary/20 to-primary/5 flex items-center justify-center transition-all duration-300 ${isDragging ? "scale-110" : ""} shadow-xl shadow-primary/20 ring-1 ring-primary/20`}
+          >
             <Upload className="w-14 h-14 text-primary" />
           </div>
-          <div className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 ring-4 ring-card">
+          <div className="absolute -top-2 -right-2 w-10 h-10 bg-linear-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg shadow-primary/30 ring-4 ring-card">
             <Plus className="w-5 h-5 text-primary-foreground" />
           </div>
         </div>
 
         <div className="text-center space-y-4">
-          <h3 className="text-3xl font-bold text-center bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h3 className="text-3xl font-bold text-center bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Drop HTML Files Here
           </h3>
           <p className="text-muted-foreground max-w-sm text-center leading-relaxed text-sm">
@@ -181,10 +185,10 @@ export function FileUpload() {
             className="hidden"
             id="file-upload"
           />
-          <Button 
-            size="lg" 
-            onClick={handleButtonClick} 
-            className="gap-2 shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 px-8 py-6 text-base font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+          <Button
+            size="lg"
+            onClick={handleButtonClick}
+            className="gap-2 shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 px-8 py-6 text-base font-medium bg-linear-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
           >
             <FilePlus className="w-5 h-5" />
             Browse Files

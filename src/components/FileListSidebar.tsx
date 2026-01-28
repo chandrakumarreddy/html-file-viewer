@@ -62,9 +62,8 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
     toggleSidebar,
     sortFilesByName,
     toggleFileCompleted,
-    getCompletedCount,
+    completedCount,
   } = useHtmlFilesStore();
-  const completedCount = getCompletedCount();
   const progressPercentage =
     files.length > 0 ? (completedCount / files.length) * 100 : 0;
 
@@ -102,13 +101,13 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
 
   return (
     <aside
-      className={`flex flex-col border-r bg-gradient-to-b from-card to-card/95 backdrop-blur-sm ${sidebarWidth} ${className}`}
+      className={`flex flex-col border-r bg-linear-to-b from-card to-card/95 backdrop-blur-sm ${sidebarWidth} ${className}`}
     >
-      <div className="shrink-0 p-5 border-b bg-gradient-to-r from-primary/5 via-primary/5 to-transparent">
+      <div className="shrink-0 p-5 border-b bg-linear-to-r from-primary/5 via-primary/5 to-transparent">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 ring-2 ring-primary/20">
+              <div className="w-10 h-10 bg-linear-to-br from-primary via-primary to-primary/70 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 ring-2 ring-primary/20">
                 <svg
                   className="w-5 h-5 text-primary-foreground"
                   viewBox="0 0 24 24"
@@ -139,7 +138,7 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
                 </svg>
               </div>
             </div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent tracking-tight">
+            <h2 className="text-xl font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent tracking-tight">
               Files
             </h2>
           </div>
@@ -329,7 +328,7 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
                 value={progressPercentage}
                 className="h-2 bg-white/50"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-transparent rounded-full animate-pulse" />
+              <div className="absolute inset-0 bg-linear-to-r from-primary/20 via-transparent to-transparent rounded-full animate-pulse" />
             </div>
           </div>
         </div>
