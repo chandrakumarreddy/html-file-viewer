@@ -100,7 +100,7 @@ export function FilePreview() {
       {/* Preview Header */}
       <div className="flex items-center justify-between p-4 border-b bg-card">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <FileCode className="w-5 h-5 text-primary flex-shrink-0" />
+          <FileCode className="w-5 h-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             <h3 className="text-tiny font-semibold truncate">
               {selectedFile.name}
@@ -110,7 +110,7 @@ export function FilePreview() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant={hideAside ? "default" : "ghost"}
             size="icon"
@@ -159,7 +159,7 @@ export function FilePreview() {
       </div>
 
       {/* Preview Content */}
-      <div className="flex-1 bg-muted/30 overflow-hidden relative">
+      <div className="flex-1 bg-white dark:bg-muted/30 overflow-hidden relative">
         <div ref={previewRef} className="w-full h-full">
           <iframe
             ref={iframeRef}

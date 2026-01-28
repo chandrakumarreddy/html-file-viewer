@@ -101,7 +101,7 @@ export function FileListSidebar({ className }: FileListSidebarProps) {
 
   return (
     <aside
-      className={`flex flex-col border-r bg-linear-to-b from-card to-card/95 backdrop-blur-sm ${sidebarWidth} ${className}`}
+      className={`flex flex-col bg-linear-to-b from-card to-card/95 backdrop-blur-sm ${sidebarWidth} ${className}`}
     >
       <div className="shrink-0 p-5 border-b bg-linear-to-r from-primary/5 via-primary/5 to-transparent">
         <div className="flex items-center justify-between mb-3">
