@@ -69,6 +69,11 @@ export function FilePreview() {
         doc.write(selectedFile.content);
         doc.close();
 
+        // Scroll iframe to top after content loads
+        if (iframe.contentWindow) {
+          iframe.contentWindow.scrollTo(0, 0);
+        }
+
         // Add base styles to make preview nicer
         const style = doc.createElement("style");
         style.textContent = `
